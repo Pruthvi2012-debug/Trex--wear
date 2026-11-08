@@ -1,0 +1,493 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>T-REX WEAR | Premium Streetwear</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #080808;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background: #080808;
+  padding: 20px 6%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #292929;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+nav {
+  display: flex;
+  gap: 15px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.hero {
+  min-height: 480px;
+  padding: 90px 7%;
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(90deg, #080808, #080808aa),
+    url("images/hero.jpg") center/cover;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 8vw, 75px);
+  line-height: 1;
+  margin: 18px 0;
+}
+
+.hero p {
+  color: #bbb;
+  line-height: 1.7;
+  margin-bottom: 25px;
+}
+
+.gold {
+  color: #c5a878;
+  letter-spacing: 4px;
+  font-size: 12px;
+}
+
+.btn {
+  display: inline-block;
+  background: white;
+  color: black;
+  padding: 14px 22px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+section {
+  padding: 65px 6%;
+}
+
+.heading {
+  margin-bottom: 30px;
+}
+
+.heading h2 {
+  font-size: 32px;
+  margin-top: 10px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.filters button {
+  padding: 10px 14px;
+  background: #181818;
+  color: white;
+  border: 1px solid #333;
+  cursor: pointer;
+}
+
+.filters button.active {
+  background: white;
+  color: black;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #141414;
+  border: 1px solid #292929;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  display: block;
+  background: #252525;
+}
+
+.card-content {
+  padding: 15px;
+}
+
+.card h3 {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #aaa;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.new {
+  color: #c5a878;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.order {
+  display: block;
+  background: white;
+  color: black;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.about {
+  text-align: center;
+  background: #141414;
+}
+
+.about p {
+  max-width: 600px;
+  color: #aaa;
+  line-height: 1.8;
+  margin: 20px auto;
+}
+
+.contact {
+  text-align: center;
+}
+
+footer {
+  border-top: 1px solid #333;
+  text-align: center;
+  padding: 30px;
+  color: #888;
+  font-size: 12px;
+}
+
+@media(max-width:700px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .products {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  section {
+    padding: 45px 5%;
+  }
+
+  .hero {
+    min-height: 400px;
+  }
+}
+
+@media(max-width:380px) {
+  .products {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">T-REX 🦖 WEAR</div>
+
+  <nav>
+    <a href="#home">HOME</a>
+    <a href="#shop">SHOP</a>
+    <a href="#about">ABOUT</a>
+    <a href="#contact">CONTACT</a>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div>
+    <div class="gold">PREMIUM STREETWEAR</div>
+
+    <h1>BUILT<br>DIFFERENT.<br>WEAR DIFFERENT.</h1>
+
+    <p>
+      Discover the latest streetwear collection.
+      Express your own identity with T-REX WEAR.
+    </p>
+
+    <a href="#shop" class="btn">SHOP COLLECTION</a>
+  </div>
+</section>
+
+<section id="shop">
+
+  <div class="heading">
+    <div class="gold">FIND YOUR STYLE</div>
+    <h2>OUR COLLECTION</h2>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="products" id="products"></div>
+
+</section>
+
+<section class="about" id="about">
+
+  <div class="gold">OUR STORY</div>
+  <h2>MORE THAN CLOTHING.</h2>
+
+  <p>
+    T-REX WEAR is a streetwear brand
+    inspired by confidence, individuality
+    and modern fashion.
+
+    We believe your style tells your story.
+  </p>
+
+  <h3>BUILT DIFFERENT. WEAR DIFFERENT.</h3>
+
+</section>
+
+<section class="contact" id="contact">
+
+  <div class="gold">GET IN TOUCH</div>
+
+  <h2>READY TO ORDER?</h2>
+
+  <p style="color:#aaa;margin:20px">
+    Contact us for product enquiries.
+  </p>
+
+  <a class="btn" id="contactButton" href="#">
+    CONTACT ON WHATSAPP
+  </a>
+
+</section>
+
+<footer>
+  <div class="logo">T-REX WEAR</div>
+  <p>PREMIUM STREETWEAR</p>
+  <br>
+  © 2026 T-REX WEAR. All rights reserved.
+</footer>
+
+<script>
+
+// ADD YOUR PARENT-MANAGED WHATSAPP NUMBER
+// Example format: 919876543210
+
+const WHATSAPP = "91XXXXXXXXXX";
+
+// ADD NEW PRODUCTS HERE
+
+const products = [
+
+{
+name: "Essential Black Tee",
+category: "T-Shirts",
+price: "₹799",
+sizes: "S, M, L, XL",
+image: "images/black-tee.jpg",
+newArrival: true
+},
+
+{
+name: "Signature White Tee",
+category: "T-Shirts",
+price: "₹799",
+sizes: "S, M, L, XL",
+image: "images/white-tee.jpg",
+newArrival: false
+},
+
+{
+name: "Urban Hoodie",
+category: "Hoodies",
+price: "₹1299",
+sizes: "S, M, L, XL",
+image: "images/hoodie.jpg",
+newArrival: true
+},
+
+{
+name: "Street Cargo",
+category: "Cargo Pants",
+price: "₹999",
+sizes: "S, M, L, XL",
+image: "images/cargo.jpg",
+newArrival: false
+},
+
+{
+name: "Classic Sweatshirt",
+category: "Sweatshirts",
+price: "₹1099",
+sizes: "S, M, L, XL",
+image: "images/sweatshirt.jpg",
+newArrival: false
+},
+
+{
+name: "Street Cap",
+category: "Accessories",
+price: "₹399",
+sizes: "One Size",
+image: "images/cap.jpg",
+newArrival: true
+}
+
+];
+
+const categories = [
+"All",
+"New Arrivals",
+"T-Shirts",
+"Hoodies",
+"Cargo Pants",
+"Sweatshirts",
+"Accessories"
+];
+
+let selected = "All";
+
+function orderLink(product) {
+
+  const message = encodeURIComponent(
+    "Hello T-REX WEAR! I am interested in " +
+    product.name +
+    ". Please share availability and details."
+  );
+
+  if (!/^91\d{10}$/.test(WHATSAPP)) {
+    return "https://wa.me/?text=" + message;
+  }
+
+  return "https://wa.me/" + WHATSAPP + "?text=" + message;
+}
+
+function showFilters() {
+
+  document.getElementById("filters").innerHTML =
+    categories.map(c => `
+      <button
+        class="${selected === c ? "active" : ""}"
+        onclick="changeCategory('${c}')">
+        ${c}
+      </button>
+    `).join("");
+}
+
+function changeCategory(category) {
+  selected = category;
+  showFilters();
+  showProducts();
+}
+
+function showProducts() {
+
+  const list = products.filter(p => {
+
+    if (selected === "All") return true;
+
+    if (selected === "New Arrivals")
+      return p.newArrival;
+
+    return p.category === selected;
+
+  });
+
+  const container = document.getElementById("products");
+
+  if (!list.length) {
+    container.textContent = "No products available yet.";
+    return;
+  }
+
+  container.innerHTML = list.map(p => `
+
+    <div class="card">
+
+      <img src="${p.image}" alt="${p.name}">
+
+      <div class="card-content">
+
+        ${p.newArrival ?
+          '<div class="new">★ NEW ARRIVAL</div>' : ""}
+
+        <h3>${p.name}</h3>
+
+        <p>Sizes: ${p.sizes}</p>
+
+        <div class="price">${p.price}</div>
+
+        <a class="order"
+           href="${orderLink(p)}"
+           target="_blank"
+           rel="noopener">
+          ORDER ON WHATSAPP
+        </a>
+
+      </div>
+    </div>
+
+  `).join("");
+}
+
+showFilters();
+showProducts();
+
+document.getElementById("contactButton").href =
+  "https://wa.me/" + WHATSAPP;
+
+</script>
+
+</body>
+</html>
