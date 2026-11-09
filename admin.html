@@ -220,7 +220,10 @@
     const name = document.getElementById("name").value.trim();
     const description = document.getElementById("description").value;
     const price = Number(document.getElementById("price").value);
-    const sizes = document.getElementById("sizes").value;
+    const sizes = document.getElementById("sizes").value
+  .split(",")
+  .map(size => size.trim())
+  .filter(size => size.length > 0);
     const file = document.getElementById("photo").files[0];
 
     let image_url = null;
