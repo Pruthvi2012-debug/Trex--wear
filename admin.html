@@ -1,1 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T-Rex Wear Admin</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    input, textarea, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      margin: 7px 0;
+      border: 0;
+      border-radius: 7px;
+    }
+    button {
+      background: #d8ff00;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .product {
+      background: #292929;
+      padding: 14px;
+      margin: 12px 0;
+      border-radius: 10px;
+    }
+    .product img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+    }
+    .secondary {
+      background: #555;
+      color: white;
+    }
+    #message { color: #d8ff00; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>T-REX WEAR</h1>
+  <h2>Admin Panel</h2>
 
+  <section id="login">
+    <h3>Admin Login</h3>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+  </section>
+
+  <section id="dashboard" hidden>
+    <button id="logoutBtn" class="secondary">Logout</button>
+    <h2>Add / Edit Product</h2>
+
+    <form id="productForm">
+      <input id="name" placeholder="Product name" required>
+      <textarea id="description" placeholder="Description"></textarea>
+      <input id="price" type="number" min="0" step="0.01"
+             placeholder="Price in ₹" required>
+      <input id="sizes" placeholder="Sizes (e.g. S, M, L, XL)">
+      <input id="photo" type="file" accept="image/*">
+      <button type="submit" id="saveBtn">Add Product</button>
+      <button type="button" id="cancelBtn" class="secondary" hidden>
+        Cancel Edit
+      </button>
+    </form>
+
+    <p id="message"></p>
+    <h2>Your Products</h2>
+    <div id="products"></div>
+  </section>
+</div>
+
+<script type="module">
+  import { createClient } from
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  const SUPABASE_URL = "https://rvxsitxjjycdyuulvkjr.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_j8n3pGn1kh1Z-MWzPhXz1g_r6qaAhLZ";
+
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const loginSection = document.getElementById("login");
+  const dashboard = document.getElementById("dashboard");
+  const message = document.getElementById("message");
+  let editingId = null;
+
+  function say(text) {
+    message.textContent = text;
+  }
+
+  async function checkAdmin() {
+    const { data, error } = await db.rpc("is_admin");
+
+    if (error || data !== true) {
+      loginSection.hidden = false;
+      dashboard.hidden = true;
+      say("This account does not have admin permission.");
+      return false;
+    }
+
+    loginSection.hidden = true;
+    dashboard.hidden = false;
+    await loadProducts();
+    return true;
+  }
+
+  document.getElementById("loginBtn").onclick = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    say("Logging in...");
+
+    const { error } = await db.auth.signInWithPassword({
+      email, password
+    });
+
+    if (error) {
+      say(error.message);
+      return;
+    }
+
+    await checkAdmin();
+  };
+
+  document.getElementById("logoutBtn").onclick = async () => {
+    await db.auth.signOut();
+    dashboard.hidden = true;
+    loginSection.hidden = false;
+    say("Logged out.");
+  };
+
+  async function loadProducts() {
+    const { data, error } = await db
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      say(error.message);
+      return;
+    }
+
+    const area = document.getElementById("products");
+    area.replaceChildren();
+
+    data.forEach(product => {
+      const card = document.createElement("div");
+      card.className = "product";
+
+      const title = document.createElement("h3");
+      title.textContent = product.name;
+
+      const price = document.createElement("p");
+      price.textContent = "₹" + product.price;
+
+      const sizes = document.createElement("p");
+      sizes.textContent = "Sizes: " + (product.sizes || "");
+
+      card.append(title, price, sizes);
+
+      if (product.image_url) {
+        const img = document.createElement("img");
+        img.src = product.image_url;
+        img.alt = product.name;
+        card.append(img);
+      }
+
+      const edit = document.createElement("button");
+      edit.textContent = "Edit";
+      edit.onclick = () => editProduct(product);
+
+      const remove = document.createElement("button");
+      remove.textContent = "Delete";
+      remove.className = "secondary";
+      remove.onclick = () => deleteProduct(product.id);
+
+      card.append(edit, remove);
+      area.append(card);
+    });
+  }
+
+  function editProduct(product) {
+    editingId = product.id;
+    document.getElementById("name").value = product.name;
+    document.getElementById("description").value =
+      product.description || "";
+    document.getElementById("price").value = product.price;
+    document.getElementById("sizes").value = product.sizes || "";
+    document.getElementById("saveBtn").textContent = "Save Changes";
+    document.getElementById("cancelBtn").hidden = false;
+    say("Editing " + product.name);
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById("cancelBtn").onclick = () => {
+    editingId = null;
+    document.getElementById("productForm").reset();
+    document.getElementById("saveBtn").textContent = "Add Product";
+    document.getElementById("cancelBtn").hidden = true;
+    say("");
+  };
+
+  document.getElementById("productForm").onsubmit = async event => {
+    event.preventDefault();
+    say("Saving product...");
+
+    const name = document.getElementById("name").value.trim();
+    const description = document.getElementById("description").value;
+    const price = Number(document.getElementById("price").value);
+    const sizes = document.getElementById("sizes").value;
+    const file = document.getElementById("photo").files[0];
+
+    let image_url = null;
+
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        say("Please select an image file.");
+        return;
+      }
+
+      const filePath = crypto.randomUUID() + "-" +
+        file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+      const { error: uploadError } = await db.storage
+        .from("product-images")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        say(uploadError.message);
+        return;
+      }
+
+      const result = db.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      image_url = result.data.publicUrl;
+    }
+
+    const product = { name, description, price, sizes };
+
+    if (image_url) product.image_url = image_url;
+
+    let result;
+
+    if (editingId) {
+      result = await db.from("products")
+        .update(product).eq("id", editingId);
+    } else {
+      if (!image_url) {
+        say("Please select a product photo.");
+        return;
+      }
+      result = await db.from("products")
+        .insert(product);
+    }
+
+    if (result.error) {
+      say(result.error.message);
+      return;
+    }
+
+    document.getElementById("productForm").reset();
+    editingId = null;
+    document.getElementById("saveBtn").textContent = "Add Product";
+    document.getElementById("cancelBtn").hidden = true;
+    say("Product saved successfully!");
+    await loadProducts();
+  };
+
+  async function deleteProduct(id) {
+    if (!confirm("Delete this product?")) return;
+
+    const { error } = await db.from("products")
+      .delete().eq("id", id);
+
+    if (error) {
+      say(error.message);
+      return;
+    }
+
+    say("Product deleted.");
+    await loadProducts();
+  }
+
+  const { data: sessionData } = await db.auth.getSession();
+
+  if (sessionData.session) {
+    await checkAdmin();
+  }
+</script>
+</body>
+</html>
