@@ -253,6 +253,51 @@ if (/^91\d{10}$/.test(WHATSAPP)) {
   contact.href = "https://wa.me/";
 }
 
+// Place customer order through WhatsApp
+document.getElementById("checkout-form")
+  .addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
+    if (!/^91\d{10}$/.test(WHATSAPP)) {
+      alert("Store WhatsApp number is not configured yet.");
+      return;
+    }
+
+    const name = document.getElementById("customer-name").value.trim();
+    const phone = document.getElementById("customer-phone").value.trim();
+    const address = document.getElementById("customer-address").value.trim();
+
+    let message = "NEW T-REX WEAR ORDER\n\n";
+    message += "Customer: " + name + "\n";
+    message += "Phone: " + phone + "\n";
+    message += "Address: " + address + "\n\n";
+    message += "Payment: Cash on Delivery\n\n";
+
+    cart.forEach(item => {
+      message += item.name +
+        " | Size: " + (item.size || "N/A") +
+        " | Qty: " + item.quantity +
+        " | ₹" + (item.price * item.quantity) + "\n";
+    });
+
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity, 0
+    );
+
+    message += "\nTotal: ₹" + total;
+
+    window.open(
+      "https://wa.me/" + WHATSAPP + "?text=" +
+      encodeURIComponent(message),
+      "_blank"
+    );
+  });
+   
 loadProducts();
 </script>
 
