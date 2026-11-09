@@ -4,8 +4,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>T-REX WEAR | Premium Streetwear</title>
+
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+/* =================================
+   SUPABASE CONNECTION
+   Use the SAME details as admin.html
+================================= */
+
+const SUPABASE_URL = "https://rvxsitxjjycdyuulvkjr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_j8n3pGn1kh1Z-MWzPhXz1g_r6qaAhLZ";
+
+/* Your business WhatsApp number */
+const WHATSAPP = "91XXXXXXXXXX";
+
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const productsContainer = document.getElementById("products");
+const status = document.getElementById("status");
+
+/* WhatsApp order link */
+function getWhatsAppLink(product) {
+  const message = encodeURIComponent(
+    "Hello T-REX WEAR! I want to order: " +
+    product.name +
+    ". Price: ₹" + product.price
+  );
+
+  if (/^91\d{10}$/.test(WHATSAPP)) {
+    return "https://wa.me/" + WHATSAPP + "?text=" + message;
+  }
+
+  return "https://wa.me/?text=" + message;
+}
+
+/* Create safe HTML elements */
+function addElement(parent, tag, value, className = "") {
+  const element = document.createElement(tag);
+  element.textContent = value ?? "";
+  if (className) element.className = className;
+  parent.appendChild(element);
+  return element;
+}
+
+/* Display products */
+function showProduct(product) {
+  const card = document.createElement("article");
+  card.className = "product-card";
+
+  if (product.image_url) {
+    const image = document.createElement("img");
+    image.src = product.image_url;
+    image.alt = product.name;
+    image.loading = "lazy";
+    image.onerror = () => {
+      image.alt = "Product image unavailable";
+    };
+    card.appendChild(image);
+  }
+
+  const details = document.createElement("div");
+  details.className = "product-details";
+
+  addElement(details, "h3", product.name);
+  addElement(details, "p", product.description || "");
+
+  const sizes = Array.isArray(product.sizes)
+    ? product.sizes.join(", ")
+    : (product.sizes || "");
+
+  addElement(details, "p", "Sizes: " + sizes, "sizes");
+
+  addElement(details, "p", "₹" + product.price, "price");
+
+  const orderButton = document.createElement("a");
+  orderButton.className = "order-button";
+  orderButton.href = getWhatsAppLink(product);
+  orderButton.target = "_blank";
+  orderButton.rel = "noopener noreferrer";
+  orderButton.textContent = "ORDER ON WHATSAPP";
+
+  details.appendChild(orderButton);
+  card.appendChild(details);
+
+  productsContainer.appendChild(card);
+}
+
+/* Fetch products from Supabase */
+async function loadProducts() {
+  productsContainer.replaceChildren();
+  status.textContent = "Loading latest products...";
+
+  const { data, error } = await db
+    .from("products")
+    .select("id, name, description, price, image_url, sizes, active")
+    .eq("active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Supabase error:", error);
+    status.textContent =
+      "Products could not load. Please check the Supabase connection and permissions.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    status.textContent = "No products available yet.";
+    return;
+  }
+
+  data.forEach(showProduct);
+  status.textContent = data.length + " products available";
+}
+
+/* Contact button */
+const contact = document.getElementById("contact-whatsapp");
+
+if (/^91\d{10}$/.test(WHATSAPP)) {
+  contact.href = "https://wa.me/" + WHATSAPP;
+} else {
+  contact.href = "https://wa.me/";
+}
+
+loadProducts();
+</script>
 
 <style>
 * {
@@ -14,225 +139,212 @@
   box-sizing: border-box;
 }
 
-html { scroll-behavior: smooth; }
-
 body {
-  background: #080808;
-  color: white;
+  background: #090909;
+  color: #fff;
   font-family: Arial, sans-serif;
 }
 
 header {
-  background: #080808;
-  padding: 20px 6%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #292929;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  background: #111;
+  padding: 22px 15px;
+  text-align: center;
+  border-bottom: 1px solid #c9a646;
 }
 
 .logo {
-  font-size: 23px;
-  font-weight: 900;
-  letter-spacing: 2px;
+  color: #d6b45b;
+  font-size: 30px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+header p {
+  color: #aaa;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 3px;
 }
 
 nav {
   display: flex;
-  gap: 15px;
+  justify-content: center;
+  gap: 25px;
+  padding: 15px;
+  background: #151515;
 }
 
 nav a {
   color: white;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .hero {
-  min-height: 480px;
-  padding: 90px 7%;
-  display: flex;
-  align-items: center;
-  background:
-    linear-gradient(90deg, #080808, #080808aa),
-    url("images/hero.jpg") center/cover;
+  text-align: center;
+  padding: 85px 15px;
+  background: linear-gradient(135deg, #171717, #050505);
 }
 
 .hero h1 {
-  font-size: clamp(42px, 8vw, 75px);
-  line-height: 1;
-  margin: 18px 0;
+  color: #d6b45b;
+  font-size: 38px;
+  margin-bottom: 15px;
 }
 
 .hero p {
-  color: #bbb;
-  line-height: 1.7;
+  color: #ccc;
   margin-bottom: 25px;
 }
 
-.gold {
-  color: #c5a878;
-  letter-spacing: 4px;
-  font-size: 12px;
-}
-
-.btn {
+.shop-button {
   display: inline-block;
-  background: white;
-  color: black;
-  padding: 14px 22px;
+  padding: 13px 28px;
+  background: #d6b45b;
+  color: #080808;
   text-decoration: none;
   font-weight: bold;
-  font-size: 12px;
-  border: none;
-  cursor: pointer;
+  border-radius: 3px;
 }
 
-section {
-  padding: 65px 6%;
+.section {
+  padding: 45px 16px;
+  text-align: center;
 }
 
-.heading {
-  margin-bottom: 30px;
+.section h2 {
+  color: #d6b45b;
+  margin-bottom: 25px;
+  font-size: 27px;
 }
 
-.heading h2 {
-  font-size: 32px;
-  margin-top: 10px;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 28px;
-}
-
-.filters button {
-  padding: 10px 14px;
-  background: #181818;
-  color: white;
-  border: 1px solid #333;
-  cursor: pointer;
-}
-
-.filters button.active {
-  background: white;
-  color: black;
+#status {
+  color: #bbb;
+  margin: 20px 0;
 }
 
 .products {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 22px;
+  max-width: 1100px;
+  margin: auto;
 }
 
-.card {
-  background: #141414;
-  border: 1px solid #292929;
+.product-card {
+  background: #171717;
+  border: 1px solid #333;
+  border-radius: 6px;
   overflow: hidden;
+  text-align: left;
 }
 
-.card img {
+.product-card img {
   width: 100%;
-  aspect-ratio: 4/5;
+  height: 250px;
   object-fit: cover;
-  display: block;
-  background: #252525;
+  background: #222;
 }
 
-.card-content {
-  padding: 15px;
+.product-details {
+  padding: 17px;
 }
 
-.card h3 {
-  font-size: 15px;
+.product-details h3 {
+  font-size: 19px;
   margin-bottom: 10px;
 }
 
-.card p {
-  color: #aaa;
-  font-size: 12px;
+.product-details p {
+  color: #bbb;
   margin-bottom: 10px;
+  font-size: 14px;
 }
 
-.price {
+.product-details .sizes {
+  color: #d6b45b;
+}
+
+.product-details .price {
+  color: #d6b45b;
+  font-size: 23px;
   font-weight: bold;
-  margin: 12px 0;
+  margin: 15px 0;
 }
 
-.new {
-  color: #c5a878;
-  font-size: 10px;
-  margin-bottom: 8px;
-}
-
-.order {
+.order-button {
   display: block;
-  background: white;
-  color: black;
+  background: #d6b45b;
+  color: #080808;
+  padding: 13px;
   text-align: center;
-  padding: 12px;
   text-decoration: none;
-  font-size: 11px;
   font-weight: bold;
+  border-radius: 3px;
 }
 
 .about {
-  text-align: center;
   background: #141414;
 }
 
 .about p {
+  color: #ccc;
   max-width: 600px;
-  color: #aaa;
-  line-height: 1.8;
-  margin: 20px auto;
+  margin: auto;
+  line-height: 1.7;
 }
 
 .contact {
   text-align: center;
+  padding: 45px 15px;
+  background: #171717;
+}
+
+.contact h2 {
+  color: #d6b45b;
+  margin-bottom: 15px;
+}
+
+.contact p {
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.contact a {
+  display: inline-block;
+  margin: 7px;
+  padding: 13px 20px;
+  background: #d6b45b;
+  color: #080808;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 3px;
 }
 
 footer {
-  border-top: 1px solid #333;
   text-align: center;
-  padding: 30px;
+  padding: 22px;
   color: #888;
-  font-size: 12px;
+  background: #050505;
+  font-size: 13px;
 }
 
-@media(max-width:700px) {
-  header {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  nav {
-    flex-wrap: wrap;
-    justify-content: center;
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 29px;
   }
 
   .products {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 
-  section {
-    padding: 45px 5%;
+  .product-card img {
+    height: 180px;
   }
 
-  .hero {
-    min-height: 400px;
-  }
-}
-
-@media(max-width:380px) {
-  .products {
-    grid-template-columns: 1fr;
+  .product-details {
+    padding: 11px;
   }
 }
 </style>
@@ -241,301 +353,60 @@ footer {
 <body>
 
 <header>
-  <div class="logo">T-REX 🦖 WEAR</div>
-
-  <nav>
-    <a href="#home">HOME</a>
-    <a href="#shop">SHOP</a>
-    <a href="#about">ABOUT</a>
-    <a href="#contact">CONTACT</a>
-  </nav>
+  <div class="logo">T-REX WEAR</div>
+  <p>PREMIUM STREETWEAR</p>
 </header>
 
+<nav>
+  <a href="#home">HOME</a>
+  <a href="#shop">SHOP</a>
+  <a href="#about">ABOUT</a>
+  <a href="#contact">CONTACT</a>
+</nav>
+
 <section class="hero" id="home">
-  <div>
-    <div class="gold">PREMIUM STREETWEAR</div>
-
-    <h1>BUILT<br>DIFFERENT.<br>WEAR DIFFERENT.</h1>
-
-    <p>
-      Discover the latest streetwear collection.
-      Express your own identity with T-REX WEAR.
-    </p>
-
-    <a href="#shop" class="btn">SHOP COLLECTION</a>
-  </div>
+  <h1>WEAR THE ATTITUDE</h1>
+  <p>Discover your style. Define your identity.</p>
+  <a href="#shop" class="shop-button">SHOP NOW</a>
 </section>
 
-<section id="shop">
-
-  <div class="heading">
-    <div class="gold">FIND YOUR STYLE</div>
-    <h2>OUR COLLECTION</h2>
-  </div>
-
-  <div class="filters" id="filters"></div>
-
+<section class="section" id="shop">
+  <h2>OUR COLLECTION</h2>
+  <p id="status">Loading products...</p>
   <div class="products" id="products"></div>
-
 </section>
 
-<section class="about" id="about">
-
-  <div class="gold">OUR STORY</div>
-  <h2>MORE THAN CLOTHING.</h2>
-
+<section class="section about" id="about">
+  <h2>ABOUT T-REX WEAR</h2>
   <p>
-    T-REX WEAR is a streetwear brand
-    inspired by confidence, individuality
-    and modern fashion.
-
-    We believe your style tells your story.
+    Welcome to T-REX WEAR.
+    Discover premium streetwear and express
+    your own style with confidence.
   </p>
-
-  <h3>BUILT DIFFERENT. WEAR DIFFERENT.</h3>
-
 </section>
 
 <section class="contact" id="contact">
+  <h2>CONTACT T-REX WEAR</h2>
+  <p>Have questions? We are here to help!</p>
 
-  <div class="gold">GET IN TOUCH</div>
-
-  <h2>READY TO ORDER?</h2>
-
-  <p style="color:#aaa;margin:20px">
-    Contact us for product enquiries.
-  </p>
-
-  <a class="btn" id="contactButton" href="#">
-    CONTACT ON WHATSAPP
+  <a id="contact-whatsapp"
+     href="https://wa.me/"
+     target="_blank"
+     rel="noopener">
+     CHAT ON WHATSAPP
   </a>
 
+  <a href="https://instagram.com/"
+     target="_blank"
+     rel="noopener">
+     FOLLOW ON INSTAGRAM
+  </a>
 </section>
 
 <footer>
-  <div class="logo">T-REX WEAR</div>
-  <p>PREMIUM STREETWEAR</p>
-  <br>
-  © 2026 T-REX WEAR. All rights reserved.
+  © 2026 T-REX WEAR. ALL RIGHTS RESERVED.
 </footer>
 
-<script>
-
-// ADD YOUR PARENT-MANAGED WHATSAPP NUMBER
-// Example format: 919876543210
-
-const WHATSAPP = "91XXXXXXXXXX";
-
-// ADD NEW PRODUCTS HERE
-
-const products = [
-
-{
-name: "Essential Black Tee",
-category: "T-Shirts",
-price: "₹799",
-sizes: "S, M, L, XL",
-image: "images/black-tee.jpg",
-newArrival: true
-},
-
-{
-name: "Signature White Tee",
-category: "T-Shirts",
-price: "₹799",
-sizes: "S, M, L, XL",
-image: "images/white-tee.jpg",
-newArrival: false
-},
-
-{
-name: "Urban Hoodie",
-category: "Hoodies",
-price: "₹1299",
-sizes: "S, M, L, XL",
-image: "images/hoodie.jpg",
-newArrival: true
-},
-
-{
-name: "Street Cargo",
-category: "Cargo Pants",
-price: "₹999",
-sizes: "S, M, L, XL",
-image: "images/cargo.jpg",
-newArrival: false
-},
-
-{
-name: "Classic Sweatshirt",
-category: "Sweatshirts",
-price: "₹1099",
-sizes: "S, M, L, XL",
-image: "images/sweatshirt.jpg",
-newArrival: false
-},
-
-{
-name: "Street Cap",
-category: "Accessories",
-price: "₹399",
-sizes: "One Size",
-image: "images/cap.jpg",
-newArrival: true
-}
-
-];
-
-const categories = [
-"All",
-"New Arrivals",
-"T-Shirts",
-"Hoodies",
-"Cargo Pants",
-"Sweatshirts",
-"Accessories"
-
-<script type="module">
-import { createClient } from
-"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-// USE THE SAME DETAILS AS YOUR ADMIN PANEL
-const SUPABASE_URL = "https://rvxsitxjjycdyuulvkjr.supabase.co";
-const SUPABASE_KEY = "sb_publishable_j8n3pGn1kh1Z-MWzPhXz1g_r6qaAhLZ";
-
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Your WhatsApp number
-const WHATSAPP = "91XXXXXXXXXX";
-
-const container = document.getElementById("products");
-const filters = document.getElementById("filters");
-
-filters.textContent = "All Products";
-
-function orderLink(product) {
-  const message = encodeURIComponent(
-    "Hello T-REX WEAR! I am interested in " +
-    product.name +
-    ". Please share availability and details."
-  );
-
-  if (!/^91\d{10}$/.test(WHATSAPP)) {
-    return "https://wa.me/?text=" + message;
-  }
-
-  return "https://wa.me/" + WHATSAPP + "?text=" + message;
-}
-
-function addText(parent, tag, value, className = "") {
-  const element = document.createElement(tag);
-  element.textContent = value || "";
-  if (className) element.className = className;
-  parent.appendChild(element);
-  return element;
-}
-
-async function loadProducts() {
-  container.textContent = "Loading products...";
-
-  const { data, error } = await db
-    .from("products")
-    .select("id, name, description, price, image_url, sizes")
-    .eq("active", true)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    container.textContent =
-      "Unable to load products. Please try again later.";
-    console.error(error.message);
-    return;
-  }
-
-  container.replaceChildren();
-
-  if (!data || data.length === 0) {
-    container.textContent = "No products available yet.";
-    return;
-  }
-
-  data.forEach(product => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    if (product.image_url) {
-      const img = document.createElement("img");
-      img.src = product.image_url;
-      img.alt = product.name;
-      img.loading = "lazy";
-      card.appendChild(img);
-    }
-
-    const content = document.createElement("div");
-    content.className = "card-content";
-
-    addText(content, "h3", product.name);
-    addText(content, "p", product.description || "");
-
-    const sizes = Array.isArray(product.sizes)
-      ? product.sizes.join(", ")
-      : (product.sizes || "");
-
-    addText(content, "p", "Sizes: " + sizes);
-
-    addText(content, "div", "₹" + product.price, "price");
-
-    const order = document.createElement("a");
-    order.className = "order";
-    order.href = orderLink(product);
-    order.target = "_blank";
-    order.rel = "noopener";
-    order.textContent = "ORDER ON WHATSAPP";
-
-    content.appendChild(order);
-    card.appendChild(content);
-    container.appendChild(card);
-  });
-}
-
-document.getElementById("contactButton").href =
-  /^91\d{10}$/.test(WHATSAPP)
-    ? "https://wa.me/" + WHATSAPP
-    : "https://wa.me/";
-
-loadProducts();
-</script>
-<section style="padding:30px;text-align:center;background:#111;color:white;">
-  <h2>NEW ARRIVALS</h2>
-
-  <div style="background:#222;padding:15px;border-radius:12px;max-width:300px;margin:auto;">
-    <img
-      src="IMG_ef37fab2-3c4e-4d51-b7b1-ce4ece390760.jpg"
-      alt="T-Rex Wear T-shirt"
-      style="width:100%;border-radius:10px;"
-    >
-    <h3>Oversized T-Shirt</h3>
-    <p>₹799</p>
-    <p>Available Sizes: S, M, L, XL</p>
-  </div>
-</section>
-  </section>
-
-<!-- CONTACT SECTION -->
-<section id="contact">
-  <h2>CONTACT T-REX WEAR</h2>
-  <p>Have questions? We're here to help!</p>
-
-  <a href="https://wa.me/91XXXXXXXXXX" target="_blank">
-    CHAT WITH US ON WHATSAPP
-  </a>
-
-  <br><br>
-
-  <a href="https://instagram.com/YOUR_INSTAGRAM_USERNAME" target="_blank">
-    FOLLOW US ON INSTAGRAM
-  </a>
-</section>
 </body>
-</html>
-</body>
-</html>
+  </html>
+  
