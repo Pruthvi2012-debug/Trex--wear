@@ -394,12 +394,26 @@ const categories = [
 "Cargo Pants",
 "Sweatshirts",
 "Accessories"
-];
 
-let selected = "All";
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+// USE THE SAME DETAILS AS YOUR ADMIN PANEL
+const SUPABASE_URL = "https://rvxsitxjjycdyuulvkjr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_j8n3pGn1kh1Z-MWzPhXz1g_r6qaAhLZ";
+
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Your WhatsApp number
+const WHATSAPP = "91XXXXXXXXXX";
+
+const container = document.getElementById("products");
+const filters = document.getElementById("filters");
+
+filters.textContent = "All Products";
 
 function orderLink(product) {
-
   const message = encodeURIComponent(
     "Hello T-REX WEAR! I am interested in " +
     product.name +
@@ -413,80 +427,82 @@ function orderLink(product) {
   return "https://wa.me/" + WHATSAPP + "?text=" + message;
 }
 
-function showFilters() {
-
-  document.getElementById("filters").innerHTML =
-    categories.map(c => `
-      <button
-        class="${selected === c ? "active" : ""}"
-        onclick="changeCategory('${c}')">
-        ${c}
-      </button>
-    `).join("");
+function addText(parent, tag, value, className = "") {
+  const element = document.createElement(tag);
+  element.textContent = value || "";
+  if (className) element.className = className;
+  parent.appendChild(element);
+  return element;
 }
 
-function changeCategory(category) {
-  selected = category;
-  showFilters();
-  showProducts();
-}
+async function loadProducts() {
+  container.textContent = "Loading products...";
 
-function showProducts() {
+  const { data, error } = await db
+    .from("products")
+    .select("id, name, description, price, image_url, sizes")
+    .eq("active", true)
+    .order("created_at", { ascending: false });
 
-  const list = products.filter(p => {
+  if (error) {
+    container.textContent =
+      "Unable to load products. Please try again later.";
+    console.error(error.message);
+    return;
+  }
 
-    if (selected === "All") return true;
+  container.replaceChildren();
 
-    if (selected === "New Arrivals")
-      return p.newArrival;
-
-    return p.category === selected;
-
-  });
-
-  const container = document.getElementById("products");
-
-  if (!list.length) {
+  if (!data || data.length === 0) {
     container.textContent = "No products available yet.";
     return;
   }
 
-  container.innerHTML = list.map(p => `
+  data.forEach(product => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-    <div class="card">
+    if (product.image_url) {
+      const img = document.createElement("img");
+      img.src = product.image_url;
+      img.alt = product.name;
+      img.loading = "lazy";
+      card.appendChild(img);
+    }
 
-      <img src="${p.image}" alt="${p.name}">
+    const content = document.createElement("div");
+    content.className = "card-content";
 
-      <div class="card-content">
+    addText(content, "h3", product.name);
+    addText(content, "p", product.description || "");
 
-        ${p.newArrival ?
-          '<div class="new">★ NEW ARRIVAL</div>' : ""}
+    const sizes = Array.isArray(product.sizes)
+      ? product.sizes.join(", ")
+      : (product.sizes || "");
 
-        <h3>${p.name}</h3>
+    addText(content, "p", "Sizes: " + sizes);
 
-        <p>Sizes: ${p.sizes}</p>
+    addText(content, "div", "₹" + product.price, "price");
 
-        <div class="price">${p.price}</div>
+    const order = document.createElement("a");
+    order.className = "order";
+    order.href = orderLink(product);
+    order.target = "_blank";
+    order.rel = "noopener";
+    order.textContent = "ORDER ON WHATSAPP";
 
-        <a class="order"
-           href="${orderLink(p)}"
-           target="_blank"
-           rel="noopener">
-          ORDER ON WHATSAPP
-        </a>
-
-      </div>
-    </div>
-
-  `).join("");
+    content.appendChild(order);
+    card.appendChild(content);
+    container.appendChild(card);
+  });
 }
 
-showFilters();
-showProducts();
-
 document.getElementById("contactButton").href =
-  "https://wa.me/" + WHATSAPP;
+  /^91\d{10}$/.test(WHATSAPP)
+    ? "https://wa.me/" + WHATSAPP
+    : "https://wa.me/";
 
+loadProducts();
 </script>
 <section style="padding:30px;text-align:center;background:#111;color:white;">
   <h2>NEW ARRIVALS</h2>
