@@ -377,6 +377,56 @@ footer {
 </section>
 
 <section class="section about" id="about">
+   
+<section class="section" id="checkout">
+  <h2>YOUR SHOPPING CART</h2>
+
+  <div id="cart-items">
+    Your cart is empty.
+  </div>
+
+  <h3 id="cart-total">Total: ₹0</h3>
+
+  <h2>CHECKOUT</h2>
+
+  <form id="checkout-form">
+    <input
+      type="text"
+      id="customer-name"
+      placeholder="Your full name"
+      required
+    >
+
+    <input
+      type="tel"
+      id="customer-phone"
+      placeholder="Your phone number"
+      pattern="[0-9]{10}"
+      required
+    >
+
+    <textarea
+      id="customer-address"
+      placeholder="Full delivery address"
+      required
+    ></textarea>
+
+    <h3>Payment Method</h3>
+
+    <label>
+      <input type="radio" name="payment"
+        value="Cash on Delivery" checked>
+      Cash on Delivery
+    </label>
+
+    <p>UPI, PhonePe, Google Pay and cards coming soon.</p>
+
+    <button type="submit">
+      PLACE MY ORDER
+    </button>
+  </form>
+</section>
+   
   <h2>ABOUT T-REX WEAR</h2>
   <p>
     Welcome to T-REX WEAR.
